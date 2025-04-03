@@ -1,9 +1,4 @@
 streamlit
 pandas
 matplotlib
-llama_index.llms.huggingface_api 
-llama_index.embeddings.huggingface
-llama_index.core 
-llama_index.core.chat_engine 
-llama_index.core.memory 
-llama_index.core.base.llms.types 
+llama-index
