@@ -4,8 +4,8 @@ import streamlit as st
 import matplotlib.pyplot as plt
 
 # Load DataFrames from GitHub
-csv_url = "https://raw.githubusercontent.com/keanyaoha/Final_Project_WBS/main/emission_factor_formated.csv"
-csv_url_1 = "https://raw.githubusercontent.com/keanyaoha/Final_Project_WBS/main/per_capita_filtered.csv"
+csv_url = "https://raw.githubusercontent.com/keanyaoha/Final_Project/main/emission_factor_formated.csv"
+csv_url_1 = "https://raw.githubusercontent.com/keanyaoha/Final_Project/main/per_capita_filtered.csv"
 
 try:
     df = pd.read_csv(csv_url)
