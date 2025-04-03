@@ -136,7 +136,7 @@ if st.session_state.get("info_complete"):
                                 textcoords='offset points',
                                 ha='left', va='center')
 
-                ax.set_xlabel("Tons CO₂ per year")
+                ax.set_xlabel("kilogram CO₂ per year")
                 ax.xaxis.grid(True, linestyle='--', alpha=0.3)
 
                 plt.tight_layout()
