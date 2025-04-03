@@ -16,19 +16,34 @@ else:
 
     # If there's valid data to plot
     if emissions_filtered:
-        labels = [activity.replace("_", " ").capitalize() for activity in emissions_filtered.keys()]
-        values = list(emissions_filtered.values())
+        # Separate the emissions into two categories (example categories: transport and energy)
+        transport_emissions = {k: v for k, v in emissions_filtered.items() if "flight" in k or "car" in k}
+        energy_emissions = {k: v for k, v in emissions_filtered.items() if "electricity" in k or "hotel" in k}
 
-        # Create pie chart
-        fig, ax = plt.subplots()
-        ax.pie(values, labels=labels, autopct="%1.1f%%", startangle=90)
-        ax.axis("equal")  # Equal aspect ratio ensures pie is a circle
+        # Plot for transport emissions
+        if transport_emissions:
+            labels_transport = [activity.replace("_", " ").capitalize() for activity in transport_emissions.keys()]
+            values_transport = list(transport_emissions.values())
+            fig, ax = plt.subplots()
+            ax.pie(values_transport, labels=labels_transport, autopct="%1.1f%%", startangle=90)
+            ax.axis("equal")
+            st.pyplot(fig)
+            st.markdown("### 🚗 Transport Emissions:")
+            for label, value in zip(labels_transport, values_transport):
+                st.write(f"- **{label}**: {value:.4f} tons")
+        
+        # Plot for energy emissions
+        if energy_emissions:
+            labels_energy = [activity.replace("_", " ").capitalize() for activity in energy_emissions.keys()]
+            values_energy = list(energy_emissions.values())
+            fig, ax = plt.subplots()
+            ax.pie(values_energy, labels=labels_energy, autopct="%1.1f%%", startangle=90)
+            ax.axis("equal")
+            st.pyplot(fig)
+            st.markdown("### ⚡ Energy Emissions:")
+            for label, value in zip(labels_energy, values_energy):
+                st.write(f"- **{label}**: {value:.4f} tons")
 
-        st.pyplot(fig)
-
-        # Show a table as well for details
-        st.markdown("### 🔍 Detailed Emissions (tons CO₂):")
-        for label, value in zip(labels, values):
-            st.write(f"- **{label}**: {value:.4f} tons")
     else:
         st.info("Your inputs resulted in zero emissions. Try entering some activity data.")
+
