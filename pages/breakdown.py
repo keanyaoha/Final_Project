@@ -32,7 +32,7 @@ else:
             st.pyplot(fig)
             st.markdown("### 🚉 Public Transport Emissions:")
             for label, value in zip(labels_public_transport, values_public_transport):
-                st.write(f"- **{label}**: {value:.4f} tons")
+                st.write(f"- **{label}**: {value:.4f} kg")
 
         # Create pie chart for private transport
         if private_transport:
@@ -44,7 +44,7 @@ else:
             st.pyplot(fig)
             st.markdown("### 🚗 Private Transport Emissions:")
             for label, value in zip(labels_private_transport, values_private_transport):
-                st.write(f"- **{label}**: {value:.4f} tons")
+                st.write(f"- **{label}**: {value:.4f} kg")
 
         # Create pie chart for food
         if food:
@@ -56,7 +56,7 @@ else:
             st.pyplot(fig)
             st.markdown("### 🍽️ Food Emissions:")
             for label, value in zip(labels_food, values_food):
-                st.write(f"- **{label}**: {value:.4f} tons")
+                st.write(f"- **{label}**: {value:.4f} kg")
 
         # Create pie chart for others
         if others:
@@ -68,7 +68,7 @@ else:
             st.pyplot(fig)
             st.markdown("### 🏠 Other Emissions (Hotel, Electricity, Water):")
             for label, value in zip(labels_others, values_others):
-                st.write(f"- **{label}**: {value:.4f} tons")
+                st.write(f"- **{label}**: {value:.4f} kg")
 
     else:
         st.info("Your inputs resulted in zero emissions. Try entering some activity data.")
