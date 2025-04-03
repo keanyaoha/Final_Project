@@ -86,7 +86,7 @@ if st.session_state.get("info_complete"):
 
             if st.button("Calculate Carbon Footprint"):
                 total_emission = sum(st.session_state.emission_values.values())
-                st.subheader(f"Your Carbon Footprint: {total_emission:.4f} tons CO₂")
+                st.subheader(f"Your Carbon Footprint: {total_emission:.4f} kg CO₂")
 
                 def get_per_capita_emission(country_name):
                     match = df1.loc[df1["Country"] == country_name, "PerCapitaCO2"]
@@ -97,11 +97,11 @@ if st.session_state.get("info_complete"):
                 world_avg = get_per_capita_emission("World")
 
                 if country_avg is not None:
-                    st.subheader(f"Avg emission for {country}: {country_avg:.4f} tons CO₂")
+                    st.subheader(f"Avg emission for {country}: {country_avg:.4f} kg CO₂")
                 if eu_avg is not None:
-                    st.subheader(f"Avg emission for EU (27): {eu_avg:.4f} tons CO₂")
+                    st.subheader(f"Avg emission for EU (27): {eu_avg:.4f} kg CO₂")
                 if world_avg is not None:
-                    st.subheader(f"Avg emission for World: {world_avg:.4f} tons CO₂")
+                    st.subheader(f"Avg emission for World: {world_avg:.4f} kg CO₂")
 
                 st.markdown("<br><br>", unsafe_allow_html=True)
 
