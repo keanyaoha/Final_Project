@@ -1,150 +1,66 @@
-
-import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
 
-# Load DataFrames from GitHub
-csv_url = "https://raw.githubusercontent.com/keanyaoha/Final_Project/main/emission_factor_formated.csv"
-csv_url_1 = "https://raw.githubusercontent.com/keanyaoha/Final_Project/main/per_capita_filtered.csv"
+st.set_page_config(
+    page_title="Green Tomorrow",
+    page_icon="🌿",
+    layout="centered"
+)
 
-try:
-    df = pd.read_csv(csv_url)
-    df1 = pd.read_csv(csv_url_1)
-    # st.success("Datasets Loaded Successfully")
-except Exception as e:
-    st.error(f"Error loading data: {e}")
+st.markdown(
+    """
+    <style>
+        .stApp {
+            background-color: white;  /* main content area */
+        }
+        section[data-testid="stSidebar"] {
+            background-color: #e8f8f5;  /* soft green sidebar */
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-# Function to format activity names
-def format_activity_name(activity):
-    activity_mappings = {
-        "Dflight": "How many km of Domestic Flights taken the last month",
-        "Iflight": "How many km of International Flights taken the last month",
-        "diesel_train_local": "How many km traveled by diesel-powered local passenger trains the last month",
-        "diesel_train_long": "How many km traveled by diesel-powered long-distant passenger trains the last month",
-        "electric_train": "How many km traveled by electric-powered passenger trains the last month",
-        "bus": "How many km traveled by bus the last month",
-        "petrol_car": "How many km traveled by petrol-powered car the last month",
-        "Motorcycle": "How many km traveled by motorcycle the last month",
-        "ev_scooter": "How many km traveled by electric scooter the last month",
-        "ev_car": "How many km traveled by electric-powered car the last month",
-        "diesel_car": "How many km traveled by diesel-powered car the last month",
-        "water": "How much water consumed in liters the last month",
-        "electricity": "How much electricity used in kWh the last month",
-        "beef": "How much beef consumed in kg the last month",
-        "beverages": "How much beverages consumed in liters the last month",
-        "poultry": "How much poultry consumed in Kg the last month",
-        "pork": "How much pork have you consumed in kg the last month",
-        "rice": "How much processed rice consumed in kg the last month",
-        "sugar": "How much sugar have you consumed in kg the last month",
-        "oils_fats": "How much vegetable oils and fats consumed in kg the last month",
-        "meat": "How much other meat products consumed in kg the last month",
-        "dairy": "How much dairy products consumed in kg the last month",
-        "fish": "How much fish products consumed in kg the last month",
-        "other_food": "How much other food products have you consumed in kg the last month",
-        "hotel_stay": "How many nights stayed in hotels the last month"
-    }
-    return activity_mappings.get(activity, activity.replace("_", " ").capitalize())
+# --- App Overview Section ---
+st.title("🌍 Welcome to Green Tomorrow")
+st.subheader("Your Personal Carbon Footprint Tracker")
 
-# Streamlit UI
-st.title("Carbon Footprint Calculator")
-st.markdown("Calculate your carbon footprint and compare it to national and global averages!")
-st.image('carbon_image.jpg', use_container_width=True)
+st.markdown("""
+**Green Tomorrow** is an interactive tool designed to help you measure your **carbon footprint** — the total amount of greenhouse gases, primarily carbon dioxide, that your lifestyle and choices emit into the atmosphere.
 
-# Input fields
-name = st.text_input("Enter your name *")
-age = st.number_input("Enter your age *", min_value=0, max_value=120, step=1)
-gender = st.selectbox("Select your gender *", ["-- Select Gender --", "Female", "Male", "Other", "Prefer not to say"])
-mood = st.selectbox("How do you feel today?", ["-- Select Mood --", "Happy 😊", "Neutral 😐", "Concerned 😟"])
+---
 
-# Continue button
-if st.button("Continue"):
-    if not name or gender == "-- Select Gender --" or age == 0:
-        st.warning("Please fill in all required fields: name, age, and gender.")
-    else:
-        st.session_state.info_complete = True
-        st.success(f"Welcome {name}! Let's calculate your Carbon Footprint.")
+### 🧠 What is a Carbon Footprint?
 
-# Only show next section if info_complete is True
-if st.session_state.get("info_complete"):
-    st.subheader("Now let's continue with your carbon activity input:")
+A **carbon footprint** includes emissions from:
+- 🏠 Household energy use (heating, electricity)
+- 🚗 Transportation (car, flights, public transport)
+- 🍔 Food and consumption habits
+- 🛒 Shopping, waste, and more
 
-    if "Activity" not in df.columns or "Country" not in df1.columns:
-        st.error("Error: Missing required columns in dataset!")
-    else:
-        available_countries = [col for col in df.columns if col != "Activity"]
-        country = st.selectbox("Select a country:", available_countries)
+It's measured in **tons of CO₂ equivalent (CO₂e)**.
 
-        if country:
-            if "emission_values" not in st.session_state:
-                st.session_state.emission_values = {}
+---
 
-            for activity in df["Activity"]:
-                factor = df.loc[df["Activity"] == activity, country].values[0]
-                activity_description = format_activity_name(activity)
-                user_input = st.number_input(f"{activity_description}:", min_value=0.0, step=0.1, key=activity)
-                st.session_state.emission_values[activity] = user_input * factor
+### 🚨 Why It Matters
 
-            if st.button("Calculate Carbon Footprint"):
-                total_emission = sum(st.session_state.emission_values.values())
-                st.subheader(f"Your Carbon Footprint: {total_emission:.4f} kg CO₂")
+The higher our carbon footprint, the more we contribute to climate change. By understanding your own emissions, you can:
 
-                def get_per_capita_emission(country_name):
-                    match = df1.loc[df1["Country"] == country_name, "PerCapitaCO2"]
-                    return match.iloc[0] if not match.empty else None
+- Reduce your environmental impact
+- Save money through efficient choices
+- Join the global effort to combat the climate crisis
 
-                country_avg = get_per_capita_emission(country)
-                eu_avg = get_per_capita_emission("European Union (27)")
-                world_avg = get_per_capita_emission("World")
+---
 
-                if country_avg is not None:
-                    st.subheader(f"Avg emission for {country}: {country_avg:.4f} kg CO₂")
-                if eu_avg is not None:
-                    st.subheader(f"Avg emission for EU (27): {eu_avg:.4f} kg CO₂")
-                if world_avg is not None:
-                    st.subheader(f"Avg emission for World: {world_avg:.4f} kg CO₂")
+### 🛠️ How This App Works
 
-                st.markdown("<br><br>", unsafe_allow_html=True)
+1. Go to the **Calculator** page and enter details about your daily habits.
+2. Get an estimate of your **annual carbon footprint**.
+3. Compare your score to **national and global averages**.
+4. See personalized suggestions on how to **reduce** it.
 
-                # Comparison chart (horizontal with "You" on top)
-                labels = ['You', country, 'EU', 'World']
-                values = [
-                    total_emission,
-                    country_avg if country_avg is not None else 0,
-                    eu_avg if eu_avg is not None else 0,
-                    world_avg if world_avg is not None else 0
-                ]
-                user_color = '#4CAF50' if total_emission < values[3] else '#FF4B4B'
-                shared_color = '#4682B4'
-                colors = [user_color] + [shared_color] * 3
+---
 
-                # Reverse to place "You" at the top
-                labels = labels[::-1]
-                values = values[::-1]
-                colors = colors[::-1]
+### 🌿 Ready to make a difference?
 
-                fig, ax = plt.subplots(figsize=(8, 3.2))
-                bars = ax.barh(labels, values, color=colors, height=0.6)
-
-                max_value = max(values)
-                ax.set_xlim(0, max_value + 0.1 * max_value)
-
-                for bar in bars:
-                    width = bar.get_width()
-                    ax.annotate(f'{width:.2f}',
-                                xy=(width, bar.get_y() + bar.get_height() / 2),
-                                xytext=(5, 0),
-                                textcoords='offset points',
-                                ha='left', va='center')
-
-                ax.set_xlabel("kilogram CO₂ per year")
-                ax.xaxis.grid(True, linestyle='--', alpha=0.3)
-
-                plt.tight_layout()
-                st.pyplot(fig)
-
-                st.markdown(
-                    "<div style='text-align: center; color: gray;'>"
-                    "Comparison of your estimated annual carbon footprint with national and global averages."
-                    "</div>",
-                    unsafe_allow_html=True
-                )
+Start by heading to the **Calculator** page in the sidebar!
+""")
