@@ -1,32 +1,53 @@
-
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 
+# --- App Config ---
+st.set_page_config(
+    page_title="Green Tomorrow",
+    page_icon="🌿",
+    layout="centered"
+)
+
+# --- Force Logo to Appear at Top of Sidebar ---
 st.markdown(
     """
     <style>
-        .stApp {
-            background-color: white;  /* main content area */
+        [data-testid="stSidebar"]::before {
+            content: "";
+            display: block;
+            background-image: url('https://raw.githubusercontent.com/GhazalMoradi8/Carbon_Footprint_Calculator/main/GreenPrint_logo.png');
+            background-size: 90% auto;
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 140px;
+            margin: 1.5rem auto -4rem auto;  /* SUPER tight top & bottom spacing */
         }
+
         section[data-testid="stSidebar"] {
-            background-color: #e8f8f5;  /* soft green sidebar */
+            background-color: #d6f5ec;
+        }
+
+        .stApp {
+            background-color: white;
         }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Load DataFrames from GitHub
+# --- Load Data ---
 csv_url = "https://raw.githubusercontent.com/keanyaoha/Final_Project_WBS/main/emission_factor_formated.csv"
 csv_url_1 = "https://raw.githubusercontent.com/keanyaoha/Final_Project_WBS/main/per_capita_filtered_monthly.csv"
 
 try:
     df = pd.read_csv(csv_url)
     df1 = pd.read_csv(csv_url_1)
-    # st.success("Datasets Loaded Successfully")
 except Exception as e:
     st.error(f"Error loading data: {e}")
+    st.stop()
+
+available_countries = [col for col in df.columns if col != "Activity"]
 
 # Function to format activity names
 def format_activity_name(activity):
@@ -53,126 +74,142 @@ def format_activity_name(activity):
         "Oils_fats": "How much vegetable oils and fats consumed in kg the last month",
         "Other_meat": "How much other meat products consumed in kg the last month",
         "Dairy": "How much dairy products consumed in kg the last month",
-        "fish_products_consumed": "How much fish products consumed in kg the last month",
+        "Fish_products": "How much fish products consumed in kg the last month",
         "Other_food": "How much other food products have you consumed in kg the last month",
         "Hotel_stay": "How many nights stayed in hotels the last month"
     }
     return activity_mappings.get(activity, activity.replace("_", " ").capitalize())
 
-def input_sections():
-    travel = [
-        "Domestic flight", "International flight", "km_diesel_local_passenger_train_traveled",
-        "km_diesel_long_distance_passenger_train_traveled", "km_electric_passenger_train_traveled",
-        "km_bus_traveled", "km_petrol_car_traveled", "km_Motorcycle_traveled",
-        "km_ev_scooter_traveled", "km_ev_car_traveled", "diesel_car_traveled"
-    ]
-
-    food = [
-        "beef_products_consumed", "poultry_products_consumed", "pork_products_consumed",
-        "processed_rice_consumed", "sugar_consumed", "vegetable_oils_fats_consumed",
-        "other_meat_products_consumed", "dairy_products_consumed", "fish_products_consumed",
-        "other_food_products_consumed", "beverages_consumed"
-    ]
-
-    energy = ["electricity_used", "water_consumed"]
-    other = ["hotel_stay"]
-
-    tabs = st.tabs(["\U0001F697 Travel", "\U0001F37D Food", "\u26A1 Energy & Water", "\U0001F3E8 Other"])
-
-    categories = {
-        tabs[0]: travel,
-        tabs[1]: food,
-        tabs[2]: energy,
-        tabs[3]: other
-    }
-
-    for tab, activities in categories.items():
-        with tab:
-            for activity in activities:
-                formatted = format_activity_name(activity)
-                st.number_input(formatted, min_value=0.0, key=activity)
-
-# Streamlit UI
+# --- UI Layout ---
 st.title("Carbon Footprint Calculator")
 st.markdown("Calculate your carbon footprint and compare it to national and global averages!")
-st.image('carbon_image.jpg', use_container_width=True)
 
-if "Activity" not in df.columns or "Country" not in df1.columns:
-    st.error("Error: Missing required columns in dataset!")
-else:
-    available_countries = [col for col in df.columns if col != "Activity"]
-    country = st.selectbox("Select a country:", available_countries)
+# --- Step 1: Country Selection ---
+st.markdown("### \U0001F30D Select your country of residence:")
+def_country = "-- Select --"
+country = st.selectbox(" ", [def_country] + available_countries)
 
-    if country:
+# Continue only if valid country is selected
+if country != def_country:
+    st.success(
+        "✅ **Next steps:**\n"
+        "Please go through the **Travel**, **Food**, **Energy & Water**, and **Other** tabs.\n"
+        "Fill in any values relevant to you. When you're ready, click *\u201cCalculate My Carbon Footprint\u201d* at the bottom."
+    )
+
+    # --- Tabs ---
+    tabs = st.tabs(["\U0001F697 Travel", "\U0001F37D Food", "⚡ Energy & Water", "\U0001F3E8 Other"])
+
+    # --- Travel Tab ---
+    with tabs[0]:
+        travel_activities = [
+            "Domestic_flight", "International_flight", "Diesel_train_local",
+            "Diesel_train_long", "Electric_train",
+            "Bus", "Petrol_car", "Motorcycle",
+            "Ev_scooter", "Ev_car", "Diesel_car"
+        ]
+        for activity in travel_activities:
+            st.number_input(format_activity_name(activity), min_value=0.0, key=activity)
+       
+    # --- Food Tab ---
+    with tabs[1]:
+        diet_type = st.selectbox("\U0001F957 What is your diet type?", [
+            "Select...", "Vegan", "Vegetarian", "Pescatarian", "Omnivore", "Heavy Meat Eater"])
+
+        if diet_type != "Select...":
+            st.markdown("#### Now please answer the following questions:")
+            st.markdown("How much of the following foods do you consume on average per month?")
+
+            base_foods = [
+                "Rice", "Sugar", "Oils_fats",
+                "Other_food", "Beverages"]
+
+            diet_foods = {
+                "Vegan": [],
+                "Vegetarian": ["Dairy", "Other_meat"],
+                "Pescatarian": ["Fish_products", "Dairy"],
+                "Omnivore": ["Beef", "Poultry", "Pork",
+                             "Dairy", "Fish_products"],
+                "Heavy Meat Eater": ["Beef", "Poultry", "Pork",
+                                     "Dairy", "Fish_products", "Other_meat"]
+            }
+
+            food_activities = base_foods + diet_foods.get(diet_type, [])
+            for activity in food_activities:
+                label = activity.replace("_", " ").replace("products", "").replace("consumed", "").strip().capitalize()
+                value = st.number_input(f"{label}", min_value=0.0, key=activity, format="%.1f")
+                # st.markdown(f"<div class='unit-label'>kg</div>", unsafe_allow_html=True)
+
+    # --- Energy & Water Tab ---
+    with tabs[2]:
+        for activity in ["Electricity", "Water"]:
+            st.number_input(format_activity_name(activity), min_value=0.0, key=activity)
+
+    # --- Other Tab ---
+    with tabs[3]:
+        st.number_input(format_activity_name("Hotel_stay"), min_value=0.0, key="Hotel_stay")
+
+    # --- Confirmation Checkbox ---
+    st.markdown("---")
+    confirmed = st.checkbox("I have reviewed all fields and want to calculate my footprint")
+    calculate = st.button("Calculate My Carbon Footprint", disabled=not confirmed)
+
+    if calculate:
         if "emission_values" not in st.session_state:
             st.session_state.emission_values = {}
 
-        input_sections()
-
         for activity in df["Activity"]:
-            factor = df.loc[df["Activity"] == activity, country].values[0]
-            user_input = st.session_state.get(activity, 0.0)
-            st.session_state.emission_values[activity] = user_input * factor
+            if activity in st.session_state:
+                factor = df.loc[df["Activity"] == activity, country].values[0]
+                user_input = st.session_state.get(activity, 0.0)
+                st.session_state.emission_values[activity] = user_input * factor
 
-        if st.button("Calculate Carbon Footprint"):
-            total_emission = sum(st.session_state.emission_values.values())
-            st.subheader(f"Your Carbon Footprint: {total_emission:.4f} tons CO₂")
+        total_emission = sum(st.session_state.emission_values.values())
+        st.subheader(f"\U0001F30D Your Carbon Footprint: {total_emission:.1f} kg CO₂")
 
-            def get_per_capita_emission(country_name):
-                match = df1.loc[df1["Country"] == country_name, "PerCapitaCO2"]
-                return match.iloc[0] if not match.empty else None
+        # Tree equivalent
+        trees_cut = total_emission / 21.77
+        st.markdown(f"\U0001F333 **That’s equivalent to cutting down ~{trees_cut:.0f} trees!**")
 
-            country_avg = get_per_capita_emission(country)
-            eu_avg = get_per_capita_emission("European Union (27)")
-            world_avg = get_per_capita_emission("World")
+        def get_per_capita_emission(country_name):
+            match = df1.loc[df1["Country"] == country_name, "PerCapitaCO2"]
+            return match.iloc[0] if not match.empty else None
 
-            if country_avg is not None:
-                st.subheader(f"Avg emission for {country}: {country_avg:.4f} tons CO₂")
-            if eu_avg is not None:
-                st.subheader(f"Avg emission for EU (27): {eu_avg:.4f} tons CO₂")
-            if world_avg is not None:
-                st.subheader(f"Avg emission for World: {world_avg:.4f} tons CO₂")
+        country_avg = get_per_capita_emission(country)
+        eu_avg = get_per_capita_emission("European Union (27)")
+        world_avg = get_per_capita_emission("World")
 
-            st.markdown("<br><br>", unsafe_allow_html=True)
+        labels = ['You', country, 'EU', 'World']
+        values = [
+            total_emission,
+            country_avg if country_avg is not None else 0,
+            eu_avg if eu_avg is not None else 0,
+            world_avg if world_avg is not None else 0
+        ]
+        user_color = '#4CAF50' if total_emission < values[3] else '#FF4B4B'
+        shared_color = '#4682B4'
+        colors = [user_color] + [shared_color] * 3
 
-            labels = ['You', country, 'EU', 'World']
-            values = [
-                total_emission,
-                country_avg if country_avg is not None else 0,
-                eu_avg if eu_avg is not None else 0,
-                world_avg if world_avg is not None else 0
-            ]
-            user_color = '#4CAF50' if total_emission < values[3] else '#FF4B4B'
-            shared_color = '#4682B4'
-            colors = [user_color] + [shared_color] * 3
+        labels, values, colors = labels[::-1], values[::-1], colors[::-1]
 
-            labels = labels[::-1]
-            values = values[::-1]
-            colors = colors[::-1]
+        fig, ax = plt.subplots(figsize=(8, 3.2))
+        bars = ax.barh(labels, values, color=colors, height=0.6)
+        ax.set_xlim(0, max(values) + 0.1 * max(values))
 
-            fig, ax = plt.subplots(figsize=(8, 3.2))
-            bars = ax.barh(labels, values, color=colors, height=0.6)
+        for bar in bars:
+            width = bar.get_width()
+            ax.annotate(f'{width:.1f}',
+                        xy=(width, bar.get_y() + bar.get_height() / 2),
+                        xytext=(5, 0), textcoords='offset points',
+                        ha='left', va='center')
 
-            max_value = max(values)
-            ax.set_xlim(0, max_value + 0.1 * max_value)
+        ax.set_xlabel("Tons CO₂ per year")
+        ax.xaxis.grid(True, linestyle='--', alpha=0.3)
+        plt.tight_layout()
+        st.pyplot(fig)
 
-            for bar in bars:
-                width = bar.get_width()
-                ax.annotate(f'{width:.2f}',
-                            xy=(width, bar.get_y() + bar.get_height() / 2),
-                            xytext=(5, 0),
-                            textcoords='offset points',
-                            ha='left', va='center')
-
-            ax.set_xlabel("Tons CO₂ per year")
-            ax.xaxis.grid(True, linestyle='--', alpha=0.3)
-
-            plt.tight_layout()
-            st.pyplot(fig)
-
-            st.markdown(
-                "<div style='text-align: center; color: gray;'>"
-                "Comparison of your estimated annual carbon footprint with national and global averages."
-                "</div>",
-                unsafe_allow_html=True
-            )
+        st.markdown("""
+            <div style='text-align: center; color: gray;'>
+            Comparison of your estimated annual carbon footprint with national and global averages.
+            </div>
+        """, unsafe_allow_html=True)
