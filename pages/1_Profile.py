@@ -1,33 +1,49 @@
 import streamlit as st
-import re  # for email validation
+import re
 
-# --- Page config ---
-st.set_page_config(page_title="Profile", page_icon="🌿")
+# --- App Config ---
+st.set_page_config(
+    page_title="Green Tomorrow",
+    page_icon="🌿",
+    layout="centered"
+)
 
-# --- Custom CSS for styling (without button color override) ---
+# --- Force Logo to Appear at Top of Sidebar ---
 st.markdown(
     """
     <style>
-        .stApp {
-            background-color: white;
+        [data-testid="stSidebar"]::before {
+            content: "";
+            display: block;
+            background-image: url('https://raw.githubusercontent.com/GhazalMoradi8/Carbon_Footprint_Calculator/main/GreenPrint_logo.png');
+            background-size: 90% auto;
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 140px;
+            margin: 1.5rem auto -4rem auto;  /* SUPER tight top & bottom spacing */
         }
 
         section[data-testid="stSidebar"] {
-            background-color: #e8f8f5;
+            background-color: #d6f5ec;
+        }
+
+        .stApp {
+            background-color: white;
         }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# --- Email validation function ---
+
+# ✅ Fixed Email Validation
 def is_valid_email(email):
     pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
     return re.match(pattern, email)
 
-# --- Title ---
+# --- Page Title ---
 st.title("Create Your Profile")
-st.write("Let us know a bit about you so we can personalize your carbon footprint journey")
+st.write("Let us know a bit about you so we can personalize your carbon footprint journey.")
 
 # --- Profile Form ---
 with st.form("profile_form"):
@@ -36,7 +52,6 @@ with st.form("profile_form"):
     gender = st.selectbox("Gender *", ["-- Select --", "Female", "Male", "Other", "Prefer not to say"], key="gender")
     email = st.text_input("Email Address *", key="email")
 
-    # ✅ Optional checkbox
     consent = st.checkbox(
         "I agree to participate in the carbon footprint analysis and share anonymous data for research.",
         key="consent"
@@ -44,7 +59,7 @@ with st.form("profile_form"):
 
     submitted = st.form_submit_button("Save Profile")
 
-# --- Submission handling ---
+# --- Handle Form Submission ---
 if submitted:
     if not name or not email or gender == "-- Select --":
         st.warning("⚠️ Please fill in all required fields.")
@@ -54,6 +69,7 @@ if submitted:
         st.warning("⚠️ Please enter a valid email address.")
     else:
         st.success(f"Thank you, {name}! Your profile has been saved.")
+
         st.session_state["user_profile"] = {
             "name": name,
             "age": age,
@@ -61,3 +77,19 @@ if submitted:
             "email": email,
             "consent": consent
         }
+
+        # ✅ Trigger "redirect" on next render
+        st.session_state["go_to_calculator"] = True
+        st.rerun()
+
+# --- Simulated Redirect ---
+if st.session_state.get("go_to_calculator"):
+    st.session_state["go_to_calculator"] = False  # reset flag
+
+    st.markdown("✅ Profile saved. Redirecting to Calculator page...")
+    st.markdown(
+        """
+        <meta http-equiv="refresh" content="0; url=/Calculator">
+        """,
+        unsafe_allow_html=True
+    )
