@@ -11,16 +11,16 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-        [data-testid="stSidebar"]::before {
-            content: "";
-            display: block;
-            background-image: url('https://raw.githubusercontent.com/GhazalMoradi8/Carbon_Footprint_Calculator/main/GreenPrint_logo.png');
-            background-size: 90% auto;
-            background-repeat: no-repeat;
-            background-position: center;
-            height: 140px;
-            margin: 1.5rem auto -4rem auto;  /* SUPER tight top & bottom spacing */
-        }
+      [data-testid="stSidebar"]::before {
+      content: "";
+      display: block;
+      background-image: url('/static/GreenPrint_logo.png');
+      background-size: 90% auto;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: 140px;
+      margin: 1.5rem auto -4rem auto;
+   }
 
         section[data-testid="stSidebar"] {
             background-color: #d6f5ec;
