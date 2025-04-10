@@ -34,8 +34,8 @@ csv_url = "https://raw.githubusercontent.com/keanyaoha/Final_Project_WBS/main/em
 csv_url_1 = "https://raw.githubusercontent.com/keanyaoha/Final_Project_WBS/main/per_capita_filtered_monthly.csv"
 
 try:
-    df = pd.read_csv(CSV_URL)
-    df1 = pd.read_csv(PER_CAPITA_URL)
+    df = pd.read_csv(csv_url)
+    df1 = pd.read_csv(csv_url_1)
 except Exception as e:
     st.error(f"Error loading data: {e}")
     st.stop()
